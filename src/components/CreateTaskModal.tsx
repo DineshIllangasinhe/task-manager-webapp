@@ -196,7 +196,7 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit }: CreateTas
             <button type="button" className="btn outline" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </button>
-            <button type="submit" className="btn primary" disabled={isSubmitting}>
+            <button type="submit" className="btn" disabled={isSubmitting}>
               {isSubmitting ? "Creating..." : "Create Task"}
             </button>
           </div>

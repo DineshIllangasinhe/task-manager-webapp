@@ -236,7 +236,7 @@ export default function Profile() {
                 }}>{success}</div>}
 
                 <div className="form-actions" style={{ display: "flex", gap: "0.75rem", marginTop: "1.5rem" }}>
-                  <button className="btn primary" type="submit" disabled={updating}>
+                  <button className="btn" type="submit" disabled={updating}>
                     {updating ? "Updating..." : "Save Changes"}
                   </button>
                   <button 

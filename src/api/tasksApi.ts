@@ -66,4 +66,16 @@ export async function deleteTask(id: number): Promise<void> {
   await axiosInstance.delete(`/tasks/${id}`);
 }
 
+export interface DashboardStats {
+  total: number;
+  open: number;
+  completed: number;
+  assignedToMe: number;
+}
+
+export async function getDashboardStats(): Promise<DashboardStats> {
+  const res = await axiosInstance.get("/tasks/stats/dashboard");
+  return res.data;
+}
+
 
