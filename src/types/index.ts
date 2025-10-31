@@ -10,6 +10,7 @@ export interface Task {
   description?: string;
   completed: boolean;
   assignedTo?: string;
+  assignee?: User | null;
 }
 
 export {};
