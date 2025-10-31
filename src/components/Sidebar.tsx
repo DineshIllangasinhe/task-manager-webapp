@@ -96,23 +96,14 @@ export default function Sidebar({
             {(desktopOpen || mobileOpen) && <span className="nav-label">Tasks</span>}
           </NavLink>
 
-          <NavLink to="/users" className="nav-item" onClick={onMobileClose}>
+          <NavLink to="/profile" className="nav-item" onClick={onMobileClose}>
             <span className="nav-icon" aria-hidden>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M20 21v-2a4 4 0 0 0-3-3.87M4 21v-2a4 4 0 0 1 3-3.87" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </span>
-            {(desktopOpen || mobileOpen) && <span className="nav-label">Users</span>}
-          </NavLink>
-
-          <NavLink to="/settings" className="nav-item" onClick={onMobileClose}>
-            <span className="nav-icon" aria-hidden>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </span>
-            {(desktopOpen || mobileOpen) && <span className="nav-label">Settings</span>}
+            {(desktopOpen || mobileOpen) && <span className="nav-label">Profile</span>}
           </NavLink>
         </nav>
 
