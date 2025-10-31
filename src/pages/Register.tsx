@@ -82,7 +82,7 @@ export default function Register() {
 
           {error && <div className="error">{error}</div>}
 
-          <button className="btn primary" type="submit" disabled={loading}>
+          <button className="btn" type="submit" disabled={loading}>
             {loading ? "Creating account…" : "Register"}
           </button>
         </form>

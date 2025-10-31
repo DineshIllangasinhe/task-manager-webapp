@@ -103,7 +103,7 @@ export default function Login() {
 
             {error && <div className="error">{error}</div>}
 
-            <button className="btn primary wide" type="submit" disabled={loading}>
+            <button className="btn wide" type="submit" disabled={loading}>
               {loading ? "Signing in…" : "Sign in"}
             </button>
           </form>
