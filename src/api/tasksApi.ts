@@ -1,8 +1,34 @@
 import axiosInstance from "./axiosInstance";
 import { Task } from "../types";
 
-export async function listTasks(): Promise<Task[]> {
-  const res = await axiosInstance.get("/tasks");
+export interface TaskFilters {
+  completed?: boolean;
+  assignedToId?: number | null;
+  dueDateFrom?: string;
+  dueDateTo?: string;
+}
+
+export async function listTasks(filters?: TaskFilters): Promise<Task[]> {
+  const params: Record<string, string> = {};
+  
+  if (filters?.completed !== undefined) {
+    params.completed = filters.completed.toString();
+  }
+  if (filters?.assignedToId !== undefined) {
+    if (filters.assignedToId === null) {
+      params.assignedToId = 'null';
+    } else {
+      params.assignedToId = filters.assignedToId.toString();
+    }
+  }
+  if (filters?.dueDateFrom) {
+    params.dueDateFrom = filters.dueDateFrom;
+  }
+  if (filters?.dueDateTo) {
+    params.dueDateTo = filters.dueDateTo;
+  }
+  
+  const res = await axiosInstance.get("/tasks", { params });
   return res.data.tasks || res.data || [];
 }
 

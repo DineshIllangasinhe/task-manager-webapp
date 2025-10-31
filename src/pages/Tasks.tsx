@@ -4,10 +4,12 @@ import Topbar from "../components/Topbar";
 import CreateTaskModal from "../components/CreateTaskModal";
 import EditTaskModal from "../components/EditTaskModal";
 import TaskDetailModal from "../components/TaskDetailModal";
-import { listTasks, createTask, CreateTaskData, updateTask, UpdateTaskData, deleteTask } from "../api/tasksApi";
+import { listTasks, createTask, CreateTaskData, updateTask, UpdateTaskData, deleteTask, TaskFilters } from "../api/tasksApi";
 import { getUsers } from "../api/userApi";
 import { Task, User } from "../types";
 import "../style.css";
+
+type FilterStatus = 'all' | 'open' | 'completed';
 
 export default function Tasks() {
   const [desktopOpen, setDesktopOpen] = React.useState<boolean>(true);
@@ -21,12 +23,31 @@ export default function Tasks() {
   const [isDetailModalOpen, setIsDetailModalOpen] = React.useState<boolean>(false);
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [updatingTaskId, setUpdatingTaskId] = React.useState<number | null>(null);
+  const [filterStatus, setFilterStatus] = React.useState<FilterStatus>('all');
+  const [filterAssigneeId, setFilterAssigneeId] = React.useState<number | null | undefined>(undefined);
+  const [filterDueDateFrom, setFilterDueDateFrom] = React.useState<string>('');
+  const [filterDueDateTo, setFilterDueDateTo] = React.useState<string>('');
 
   const loadTasks = React.useCallback(() => {
     let isMounted = true;
     setLoading(true);
     setError(null);
-    listTasks()
+    
+    const filters: TaskFilters = {};
+    if (filterStatus !== 'all') {
+      filters.completed = filterStatus === 'completed';
+    }
+    if (filterAssigneeId !== undefined) {
+      filters.assignedToId = filterAssigneeId;
+    }
+    if (filterDueDateFrom) {
+      filters.dueDateFrom = filterDueDateFrom;
+    }
+    if (filterDueDateTo) {
+      filters.dueDateTo = filterDueDateTo;
+    }
+    
+    listTasks(filters)
       .then((data) => {
         if (isMounted) setTasks(data || []);
       })
@@ -39,7 +60,7 @@ export default function Tasks() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [filterStatus, filterAssigneeId, filterDueDateFrom, filterDueDateTo]);
 
   React.useEffect(() => {
     loadTasks();
@@ -149,6 +170,93 @@ export default function Tasks() {
               <h2>Task List</h2>
               <div className="panel-actions">
                 <button className="btn" onClick={() => setIsModalOpen(true)}>Add Task</button>
+              </div>
+            </div>
+            <div style={{ padding: '16px', borderBottom: '1px solid rgba(15,23,42,0.06)', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'flex-end' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: '#64748b' }}>Status</label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                      className={`btn outline ${filterStatus === 'all' ? 'active' : ''}`}
+                      onClick={() => setFilterStatus('all')}
+                      style={{ padding: '6px 12px', fontSize: '14px' }}
+                    >
+                      All
+                    </button>
+                    <button 
+                      className={`btn outline ${filterStatus === 'open' ? 'active' : ''}`}
+                      onClick={() => setFilterStatus('open')}
+                      style={{ padding: '6px 12px', fontSize: '14px' }}
+                    >
+                      Open
+                    </button>
+                    <button 
+                      className={`btn outline ${filterStatus === 'completed' ? 'active' : ''}`}
+                      onClick={() => setFilterStatus('completed')}
+                      style={{ padding: '6px 12px', fontSize: '14px' }}
+                    >
+                      Completed
+                    </button>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '200px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: '#64748b' }}>Assignee</label>
+                  <select
+                    className="table-select"
+                    value={filterAssigneeId === null ? 'null' : (filterAssigneeId?.toString() || '')}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '') {
+                        setFilterAssigneeId(undefined);
+                      } else if (value === 'null') {
+                        setFilterAssigneeId(null);
+                      } else {
+                        setFilterAssigneeId(parseInt(value, 10));
+                      }
+                    }}
+                    style={{ padding: '6px 10px', fontSize: '14px', borderRadius: '8px', border: '1px solid rgba(15,23,42,0.06)' }}
+                  >
+                    <option value="">All Assignees</option>
+                    <option value="null">Unassigned</option>
+                    {users.map((user) => (
+                      <option key={user.id} value={user.id.toString()}>
+                        {user.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: '#64748b' }}>Due Date From</label>
+                  <input
+                    type="date"
+                    value={filterDueDateFrom}
+                    onChange={(e) => setFilterDueDateFrom(e.target.value)}
+                    style={{ padding: '6px 10px', fontSize: '14px', borderRadius: '8px', border: '1px solid rgba(15,23,42,0.06)' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: '#64748b' }}>Due Date To</label>
+                  <input
+                    type="date"
+                    value={filterDueDateTo}
+                    onChange={(e) => setFilterDueDateTo(e.target.value)}
+                    style={{ padding: '6px 10px', fontSize: '14px', borderRadius: '8px', border: '1px solid rgba(15,23,42,0.06)' }}
+                  />
+                </div>
+                {(filterAssigneeId !== undefined || filterDueDateFrom || filterDueDateTo) && (
+                  <button
+                    className="btn outline"
+                    onClick={() => {
+                      setFilterAssigneeId(undefined);
+                      setFilterDueDateFrom('');
+                      setFilterDueDateTo('');
+                    }}
+                    style={{ padding: '6px 12px', fontSize: '14px' }}
+                  >
+                    Clear Filters
+                  </button>
+                )}
               </div>
             </div>
             <div className="panel-body">
