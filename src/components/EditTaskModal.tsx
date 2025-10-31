@@ -1,6 +1,6 @@
 import React from "react";
 import { UpdateTaskData } from "../api/tasksApi";
-import { getUsers } from "../api/authApi";
+import { getUsers } from "../api/userApi";
 import { User, Task } from "../types";
 
 interface EditTaskModalProps {

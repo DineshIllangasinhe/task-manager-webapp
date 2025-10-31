@@ -4,8 +4,8 @@ import Topbar from "../components/Topbar";
 import CreateTaskModal from "../components/CreateTaskModal";
 import EditTaskModal from "../components/EditTaskModal";
 import TaskDetailModal from "../components/TaskDetailModal";
-import { listTasks, createTask, CreateTaskData, updateTask, UpdateTaskData } from "../api/tasksApi";
-import { getUsers } from "../api/authApi";
+import { listTasks, createTask, CreateTaskData, updateTask, UpdateTaskData, deleteTask } from "../api/tasksApi";
+import { getUsers } from "../api/userApi";
 import { Task, User } from "../types";
 import "../style.css";
 
@@ -108,6 +108,24 @@ export default function Tasks() {
     }
   };
 
+  const handleDeleteTask = async (taskId: number) => {
+    if (!window.confirm("Are you sure you want to delete this task?")) {
+      return;
+    }
+    
+    setUpdatingTaskId(taskId);
+    try {
+      await deleteTask(taskId);
+      setTasks((prevTasks) => prevTasks.filter((t) => t.id !== taskId));
+    } catch (err: any) {
+      console.error("Failed to delete task:", err);
+      alert(err?.response?.data?.error || "Failed to delete task");
+      loadTasks();
+    } finally {
+      setUpdatingTaskId(null);
+    }
+  };
+
   return (
     <div className="app-layout">
       <Sidebar
@@ -188,13 +206,28 @@ export default function Tasks() {
                         )}
                       </div>
                       <div data-label="Actions">
-                        <button 
-                          className="btn outline" 
-                          onClick={() => handleEditTask(t)}
-                          style={{ padding: '4px 8px', fontSize: '14px' }}
-                        >
-                          Edit
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button 
+                            className="btn outline" 
+                            onClick={() => handleEditTask(t)}
+                            style={{ padding: '4px 8px', fontSize: '14px' }}
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            className="btn outline" 
+                            onClick={() => handleDeleteTask(t.id)}
+                            disabled={updatingTaskId === t.id}
+                            style={{ 
+                              padding: '4px 8px', 
+                              fontSize: '14px',
+                              color: 'var(--danger)',
+                              borderColor: 'var(--danger)'
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}

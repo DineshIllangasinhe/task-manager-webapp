@@ -36,4 +36,8 @@ export async function getTask(id: number): Promise<Task> {
   return res.data.task || res.data;
 }
 
+export async function deleteTask(id: number): Promise<void> {
+  await axiosInstance.delete(`/tasks/${id}`);
+}
+
 
