@@ -1,4 +1,5 @@
 import React, { createContext, useState, ReactNode } from "react";
+import { logoutUser } from "../api/authApi";
 
 interface AuthContextType {
   user: string | null;
@@ -23,10 +24,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(username);
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null);
+  const logout = async () => {
+    try {
+      await logoutUser();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
+    }
   };
 
   return (

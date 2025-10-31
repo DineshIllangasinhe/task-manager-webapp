@@ -14,3 +14,8 @@ export async function loginUser(data: LoginData) {
   const res = await axiosInstance.post("/auth/login", data);
   return res.data;
 }
+
+export async function logoutUser() {
+  const res = await axiosInstance.post("/auth/logout");
+  return res.data;
+}
