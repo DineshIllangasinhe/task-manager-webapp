@@ -2,7 +2,9 @@ import React from "react";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 import CreateTaskModal from "../components/CreateTaskModal";
-import { listTasks, createTask, CreateTaskData, updateTask } from "../api/tasksApi";
+import EditTaskModal from "../components/EditTaskModal";
+import TaskDetailModal from "../components/TaskDetailModal";
+import { listTasks, createTask, CreateTaskData, updateTask, UpdateTaskData } from "../api/tasksApi";
 import { getUsers } from "../api/authApi";
 import { Task, User } from "../types";
 import "../style.css";
@@ -15,6 +17,9 @@ export default function Tasks() {
   const [loading, setLoading] = React.useState<boolean>(true);
   const [error, setError] = React.useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
+  const [isEditModalOpen, setIsEditModalOpen] = React.useState<boolean>(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = React.useState<boolean>(false);
+  const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [updatingTaskId, setUpdatingTaskId] = React.useState<number | null>(null);
 
   const loadTasks = React.useCallback(() => {
@@ -52,6 +57,23 @@ export default function Tasks() {
     loadTasks();
   };
 
+  const handleUpdateTask = async (data: UpdateTaskData) => {
+    if (selectedTask) {
+      await updateTask(selectedTask.id, data);
+      loadTasks();
+    }
+  };
+
+  const handleEditTask = (task: Task) => {
+    setSelectedTask(task);
+    setIsEditModalOpen(true);
+  };
+
+  const handleViewTask = (task: Task) => {
+    setSelectedTask(task);
+    setIsDetailModalOpen(true);
+  };
+
   const handleAssigneeChange = async (taskId: number, assignedToId: number | null) => {
     setUpdatingTaskId(taskId);
     try {
@@ -63,6 +85,23 @@ export default function Tasks() {
       );
     } catch (err: any) {
       console.error("Failed to update assignee:", err);
+      loadTasks();
+    } finally {
+      setUpdatingTaskId(null);
+    }
+  };
+
+  const handleStatusToggle = async (task: Task) => {
+    setUpdatingTaskId(task.id);
+    try {
+      const updatedTask = await updateTask(task.id, { completed: !task.completed });
+      setTasks((prevTasks) =>
+        prevTasks.map((t) =>
+          t.id === task.id ? updatedTask : t
+        )
+      );
+    } catch (err: any) {
+      console.error("Failed to update status:", err);
       loadTasks();
     } finally {
       setUpdatingTaskId(null);
@@ -91,7 +130,7 @@ export default function Tasks() {
             <div className="panel-header">
               <h2>Task List</h2>
               <div className="panel-actions">
-                <button className="btn primary" onClick={() => setIsModalOpen(true)}>Add Task</button>
+                <button className="btn" onClick={() => setIsModalOpen(true)}>Add Task</button>
               </div>
             </div>
             <div className="panel-body">
@@ -106,12 +145,28 @@ export default function Tasks() {
                     <div>Title</div>
                     <div>Status</div>
                     <div>Assignee</div>
+                    <div>Actions</div>
                   </div>
                   {tasks.map((t) => (
-                    <div key={t.id} className="table-row">
-                      <div>{t.title}</div>
-                      <div>{t.completed ? "Completed" : "Open"}</div>
-                      <div>
+                    <div key={t.id} className={`table-row ${t.completed ? 'completed' : ''}`}>
+                      <div data-label="Title">
+                        <span 
+                          onClick={() => handleViewTask(t)}
+                          style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                        >
+                          {t.title}
+                        </span>
+                      </div>
+                      <div data-label="Status">
+                        <span 
+                          className={`status-badge ${t.completed ? 'completed' : 'open'} ${updatingTaskId === t.id ? 'updating' : ''}`}
+                          onClick={() => handleStatusToggle(t)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {t.completed ? "Completed" : "Open"}
+                        </span>
+                      </div>
+                      <div data-label="Assignee">
                         <select
                           className="table-select"
                           value={t.assignee?.id?.toString() || ""}
@@ -132,6 +187,15 @@ export default function Tasks() {
                           <span className="table-loading">Updating...</span>
                         )}
                       </div>
+                      <div data-label="Actions">
+                        <button 
+                          className="btn outline" 
+                          onClick={() => handleEditTask(t)}
+                          style={{ padding: '4px 8px', fontSize: '14px' }}
+                        >
+                          Edit
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -145,6 +209,25 @@ export default function Tasks() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleCreateTask}
+      />
+      
+      <EditTaskModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedTask(null);
+        }}
+        onSubmit={handleUpdateTask}
+        task={selectedTask}
+      />
+      
+      <TaskDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedTask(null);
+        }}
+        task={selectedTask}
       />
     </div>
   );

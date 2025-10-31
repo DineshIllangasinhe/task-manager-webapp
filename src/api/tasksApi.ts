@@ -29,6 +29,11 @@ export interface UpdateTaskData {
 export async function updateTask(id: number, data: UpdateTaskData): Promise<Task> {
   const res = await axiosInstance.put(`/tasks/${id}`, data);
   return res.data.task || res.data;
-} 
+}
+
+export async function getTask(id: number): Promise<Task> {
+  const res = await axiosInstance.get(`/tasks/${id}`);
+  return res.data.task || res.data;
+}
 
 
